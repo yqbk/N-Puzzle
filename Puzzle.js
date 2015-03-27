@@ -109,13 +109,24 @@ function qqqq() {
 
 function goHome(block) {
     
-}
-
-
-function solution(box) {
     
 }
 
+
+function solution() {
+   
+   
+}
+
+function moveUp() {
+    var next = getInvisible();
+    
+    
+    next += qX;
+    swap(box[next], box[getInvisible()]);
+
+    drawField(c);
+}
 
 var canvas = document.getElementById('canvas');
 if (canvas.getContext){
@@ -145,7 +156,7 @@ if (canvas.getContext){
     }
     
     mix(box);
-    box[15].visible = false;
+    box[0].visible = false;
     //swap(box[14], box[15]);
     //swap(box[10], box[14]);
     
@@ -154,7 +165,15 @@ if (canvas.getContext){
     drawField(c);
     
     //qqqq();
-    var myVar = setInterval(function () {setEmpty(box[getInvisible()], box[getValue(0)])}, 1000);
+    setEmpty(box[getInvisible()], box[getValue(0)]);
+    setEmpty(box[getInvisible()], box[getValue(0)]);
+    setEmpty(box[getInvisible()], box[getValue(0)]);
+    setEmpty(box[getInvisible()], box[getValue(0)]);
+    setEmpty(box[getInvisible()], box[getValue(0)]);
+    setEmpty(box[getInvisible()], box[getValue(0)]);
+    
+    moveUp();
+
     }
     
 
