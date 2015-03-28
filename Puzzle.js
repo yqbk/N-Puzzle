@@ -27,26 +27,6 @@ function drawField(c) {
     }
 }
 
-function getValue(value) {
-    
-    var i = -1;
-    do {
-        i++;
-    } while(box[i].value != value);
-    return i;
-}
-
-function getInvisible() {
-    
-    var i = -1;
-    do {
-        i++;
-    } while(box[i].visible != false);
-    
-    return i;
-}
-
-
 function swap(block1, block2) {
     var temp = block1.value;
     block1.value = block2.value;
@@ -60,17 +40,85 @@ function swap(block1, block2) {
     }
 }
 
-function mix(box) {
-    for(var i = 0; i < quantity * 10; i++)
-    {
-        var rand1 = Math.floor(Math.random() * 15);
-        var rand2 = Math.floor(Math.random() * 15);
-        
-        swap(box[rand1], box[rand2]);
+function sovable() {
+    var sumMain = 0;
+    var sumTemp = 0;
+    
+    for(var i = 0; i <= quantity; i++) {
+        for(var j = i + 1; j < quantity; j++) {
+            if(box[j].value < box[i].value) sumTemp++;
+        }
+        sumMain += sumTemp;
+        //alert(sumTemp);
+        sumTemp = 0;
     }
-    for(var i = 0; i <= quantity; i++) 
-        box[i].visible = true;
+    //alert(sumMain);
+    return sumMain;
 }
+
+function getInvisible() {
+    
+    var i = -1;
+    do {
+        i++;
+    } while(box[i].visible != false);
+    
+    return i;
+}
+
+function mix() {
+    
+    //do {
+        for(var i = 0; i < 10; i++)
+        {
+        var changed = false;
+            
+        while(!changed) {
+            var direction = Math.floor(Math.random() * 4);
+            //alert(direction);
+            if(direction == 0 && current + 1 >= 0 && current + 1 <= 15 && box[current + 1].y == box[current].y && lastmove != "left") {
+                swap(box[current + 1], box[current]);
+                lastmove = "right";
+                changed = true;
+            }
+            if(direction == 1 && current - 1 >= 0 && current - 1 <= 15 && box[current - 1].y == box[current].y && lastmove != "right") {
+                swap(box[current - 1], box[current]);
+                lastmove = "left";
+                changed = true;
+            }
+            if(direction == 2 && current + qX >= 0 && current + qX <= 15 && box[current + qX].x == box[current].x && lastmove != "up") {
+                swap(box[current + qX], box[current]);
+                lastmove = "down";
+                changed = true;
+            }
+            if(direction == 3 && current - qX >= 0 && current - qX <= 15 && box[current - qX].x == box[current].x && lastmove != "down") { 
+                swap(box[current - qX], box[current]);
+                lastmove = "up";
+                changed = true;
+            }
+        }
+            
+            //drawField(c);
+            current = getInvisible();
+            //alert(current);
+            drawField(c);
+            
+        }
+       // alert(sovable());
+    //} while(sovable()%2 != 0);
+    
+}
+
+function getValue(value) {
+    
+    var i = -1;
+    do {
+        i++;
+    } while(box[i].value != value);
+    return i;
+}
+
+
 
 function neighbour(b1, b2) {
     
@@ -79,7 +127,6 @@ function neighbour(b1, b2) {
     else
         return false;
 }
-
 
 function setEmpty(empty, block) {
     
@@ -99,7 +146,7 @@ function setEmpty(empty, block) {
         };
     }
        
-        drawField(c);
+      drawField(c);
 }
 
 function qqqq() {
@@ -128,6 +175,76 @@ function moveUp() {
     drawField(c);
 }
 
+
+function numberOfMistakes() {
+    var sum = 0;
+    for(var i = 0; i < quantity; i++) {
+        if(box[i].value != i || box[i].visible == false) sum++;
+    }
+    return sum;
+}
+
+function nextStep() {
+    var var1, var2, var3, var4;
+    
+    var1 = 1000;
+    var2 = 1000;
+    var3 = 1000;
+    var4 = 1000;
+    
+    /*
+    if(current - qX >= 0 && current - qX <= 15 && box[current - qX].x == box[current].x && lastmove != "down") var1 = Math.abs(box[current - qY].value - current);
+    if(current + 1 >= 0 && current + 1 <= 15 && box[current + 1].y == box[current].y && lastmove != "left") var2 = Math.abs(box[current + 1].value - current);
+    if(current + qX >= 0 && current + qX <= 15 && box[current + qX].x == box[current].x && lastmove != "up") var3 = Math.abs(box[current + qX].value - current);
+    if(current - 1 >= 0 && current - 1 <= 15 && box[current - 1].y == box[current].y && lastmove != "right") var4 = Math.abs(box[current - 1].value - current);
+    */
+    
+    //alert(var1 + " " + var2 + " " + var3 + " " + var4);
+    
+   
+   
+   if(current - qX >= 0 && current - qX <= quantity && box[current - qX].x == box[current].x && lastmove != "down") {
+        swap(box[current - qX], box[current]);
+        var1 = numberOfMistakes();
+        swap(box[current - qX], box[current]);
+    }
+    if(current + 1 >= 0 && current + 1 <= quantity && box[current + 1].y == box[current].y && lastmove != "left") {
+        swap(box[current + 1], box[current]);
+        var2 = numberOfMistakes();
+        swap(box[current + 1], box[current]);
+    }
+    if(current + qX >= 0 && current + qX <= quantity && box[current + qX].x == box[current].x && lastmove != "up") {
+        swap(box[current + qX], box[current]);
+        var3 = numberOfMistakes();
+        swap(box[current + qX], box[current]);
+    }
+    if(current - 1 >= 0 && current - 1 <= quantity && box[current - 1].y == box[current].y && lastmove != "right") {
+        swap(box[current - 1], box[current]);
+        var4 = numberOfMistakes();
+        swap(box[current - 1], box[current]);
+    }
+    
+    //alert(var1 + " " + var2 + " " + var3 + " " + var4);
+    if(Math.min(var1, var2, var3, var4) == var1) {
+        swap(box[current - qY], box[current]);
+        lastmove = "up";
+    } else if(Math.min(var1, var2, var3, var4) == var2) {
+        swap(box[current + 1], box[current]);
+        lastmove = "right";
+    } else if(Math.min(var1, var2, var3, var4) == var3) {
+        swap(box[current + qX], box[current]);
+        lastmove = "down";
+    } else if(Math.min(var1, var2, var3, var4) == var4) {
+        swap(box[current - 1], box[current]);
+        lastmove = "left";
+    }
+    
+    
+    current = getInvisible();  
+    drawField(c);
+    if(numberOfMistakes() == 0) alert("Uda³o siê!");
+}
+
 var canvas = document.getElementById('canvas');
 if (canvas.getContext){
     var c = canvas.getContext('2d');
@@ -138,8 +255,6 @@ if (canvas.getContext){
     var quantity = qX * qY - 1;
     var blockWidth = WIDTH/qX;
     var blockHeight = HEIGHT/qY;
-    
-    
     
     
     for(var i = 0; i < qX; i++) {
@@ -155,24 +270,37 @@ if (canvas.getContext){
         }
     }
     
-    mix(box);
-    box[0].visible = false;
-    //swap(box[14], box[15]);
-    //swap(box[10], box[14]);
+ 
+    var current = quantity;
+    box[current].visible = false;
+    var lastmove = "none";
+    mix();
+    //setInterval(function() {mix()}, 100);
+ 
+    /*
+    box[0].value = 11;
+    box[1].value = 0;
+    box[2].value = 9;
+    box[3].value = 1;
+    box[4].value = 6;
+    box[5].value = 10;
+    box[6].value = 3;
+    box[7].value = 13;
+    box[8].value = 4;
+    box[9].value = 8;
+    box[10].value = 14;
+    box[11].value = 2;
+    box[12].value = 7;
+    box[13].value = 12;
+    box[14].value = 5;
+    box[15].value = 15;
+    */
     
-    //alert(neighbour(box[11], box[13])); 
-    
+
     drawField(c);
+    //sovable();
+    setInterval(function() {nextStep()}, 100);
     
-    //qqqq();
-    setEmpty(box[getInvisible()], box[getValue(0)]);
-    setEmpty(box[getInvisible()], box[getValue(0)]);
-    setEmpty(box[getInvisible()], box[getValue(0)]);
-    setEmpty(box[getInvisible()], box[getValue(0)]);
-    setEmpty(box[getInvisible()], box[getValue(0)]);
-    setEmpty(box[getInvisible()], box[getValue(0)]);
-    
-    moveUp();
 
     }
     
