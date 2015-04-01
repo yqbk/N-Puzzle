@@ -57,7 +57,8 @@ if (canvas.getContext){
     //var myVar = setInterval(function () {mix(blocks); drawField(c, blocks, 0, 0, 1)}, 100);
     lastmove = "none";
     
-    var endStateValues = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+    var endStateValues = [];
+    for(var i = 0; i <= quantity; i++) endStateValues.push(i+1);
     
     //alert(solvable());
     
@@ -83,7 +84,7 @@ if (canvas.getContext){
     //alert([close.length, open.length]);
  
     var k = 0;
-    while(!solution() && k <= 5000) {
+    while(!solution() && k < 10000) {
         k++;
     } 
     //alert(k);
