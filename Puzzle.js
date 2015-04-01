@@ -51,7 +51,7 @@ if (canvas.getContext){
     var current = quantity;
     blocks[current].visible = false;
     var lastmove = "none";
-    for(var i = 0; i < 12; i++) {
+    for(var i = 0; i < 14; i++) {
         mix(blocks);
     }
     //var myVar = setInterval(function () {mix(blocks); drawField(c, blocks, 0, 0, 1)}, 100);
@@ -83,15 +83,16 @@ if (canvas.getContext){
     //alert([close.length, open.length]);
  
     var k = 0;
-    while(!solution() && k <= 1000) {
+    while(!solution() && k <= 5000) {
         k++;
     } 
-    
+    //alert(k);
     drawClose(c);
    
     if(done) {
         drawSolution();
         //alert([answer]);
+        animation();
     }
     
     }
@@ -99,18 +100,26 @@ if (canvas.getContext){
     
 function drawSolution() {
     var temp = deepCopy(X);
+    
     var p = 0;
-    while(temp.parentId != 0 && p <= 100) {
+    while(temp.id != 0 && p <= 100) {
         p++;
         for(var j = 0; j < close.length; j++) {
-            if(close[i].id == temp.parentId) {
+            if(close[j].id == temp.parentId) {
+                //alert("jest!");
                 answer.push(temp.swap);
-                temp = deepCopy(close[i]);
+                temp = deepCopy(close[j]);
                 break;
             }
         }
     }
 }    
+
+function animation() {
+    setState(startState);
+    var i = answer.length - 1;
+    var v = setInterval(function () {if(i >= 0){swap(answer[i])}; i--; drawField(c, blocks, 0, 0, 1)}, 500);
+}
     
 function drawOpen(c) {
     
@@ -192,25 +201,25 @@ function generateChildren() {
     if(lastmove != "down" && swapA - qX >= 0) {
         swap("up");
         stateId++;
-        temp.push(new State(stateId, createNewBlocks(blocks), parentId, "up", "down", X.numberOfSteps + 1, numberOfMistakes()));
+        temp.push(new State(stateId, createNewBlocks(blocks), parentId, "up", "up", X.numberOfSteps + 1, numberOfMistakes()));
         swap("down");
     }
     if(lastmove != "up" && swapA + qX <= quantity) {
         swap("down");
         stateId++;
-        temp.push(new State(stateId, createNewBlocks(blocks), parentId, "down", "up", X.numberOfSteps + 1, numberOfMistakes()));
+        temp.push(new State(stateId, createNewBlocks(blocks), parentId, "down", "down", X.numberOfSteps + 1, numberOfMistakes()));
         swap("up");
     }
     if(lastmove != "right" && swapA - 1 >= 0 && blocks[swapA - 1].y == blocks[swapA].y) {
         swap("left");
         stateId++;
-        temp.push(new State(stateId, createNewBlocks(blocks), parentId, "left", "right", X.numberOfSteps + 1, numberOfMistakes()));
+        temp.push(new State(stateId, createNewBlocks(blocks), parentId, "left", "left", X.numberOfSteps + 1, numberOfMistakes()));
         swap("right");
     }
     if(lastmove != "left" && swapA + 1 <= quantity && blocks[swapA + 1].y == blocks[swapA].y) {
         swap("right");
         stateId++;
-        temp.push(new State(stateId, createNewBlocks(blocks), parentId, "right", "left", X.numberOfSteps + 1, numberOfMistakes()));
+        temp.push(new State(stateId, createNewBlocks(blocks), parentId, "right", "right", X.numberOfSteps + 1, numberOfMistakes()));
         swap("left");
     }
     
@@ -231,7 +240,7 @@ function solution() {
    
    if(compareState(X, endStateValues)) {
        close.push(deepCopy(X));
-       if(!done) alert("Uda³o siê!");
+       if(!done) alert("Uda³o siê!    Liczba sprawdzeñ: " + k);
        done = true;
        return true;
     } else {
@@ -239,8 +248,9 @@ function solution() {
        setState(X);
        var children = generateChildren();
             for(var i = 0; i < children.length; i++) {
-                if(open.indexOf(children[i]) == -1 && close.indexOf(children[i]) == -1) open.push(deepCopy(children[i]));
-                
+                if(open.indexOf(children[i]) == -1 && close.indexOf(children[i]) == -1) {
+                    open.push(deepCopy(children[i]));
+                }
             }
         //alert([open.length]);
         close.push(deepCopy(X));
