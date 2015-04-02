@@ -51,7 +51,7 @@ if (canvas.getContext){
     var current = quantity;
     blocks[current].visible = false;
     var lastmove = "none";
-    for(var i = 0; i < 14; i++) {
+    for(var i = 0; i < 20; i++) {
         mix(blocks);
     }
     //var myVar = setInterval(function () {mix(blocks); drawField(c, blocks, 0, 0, 1)}, 100);
@@ -198,26 +198,27 @@ function generateChildren() {
     var temp = [];
     var swapA = getInvisible();
     var parentId = X.id;
+    //alert(X.lastmove);
     
-    if(lastmove != "down" && swapA - qX >= 0) {
+    if(X.lastmove != "down" && swapA - qX >= 0) {
         swap("up");
         stateId++;
         temp.push(new State(stateId, createNewBlocks(blocks), parentId, "up", "up", X.numberOfSteps + 1, numberOfMistakes()));
         swap("down");
     }
-    if(lastmove != "up" && swapA + qX <= quantity) {
+    if(X.lastmove != "up" && swapA + qX <= quantity) {
         swap("down");
         stateId++;
         temp.push(new State(stateId, createNewBlocks(blocks), parentId, "down", "down", X.numberOfSteps + 1, numberOfMistakes()));
         swap("up");
     }
-    if(lastmove != "right" && swapA - 1 >= 0 && blocks[swapA - 1].y == blocks[swapA].y) {
+    if(X.lastmove != "right" && swapA - 1 >= 0 && blocks[swapA - 1].y == blocks[swapA].y) {
         swap("left");
         stateId++;
         temp.push(new State(stateId, createNewBlocks(blocks), parentId, "left", "left", X.numberOfSteps + 1, numberOfMistakes()));
         swap("right");
     }
-    if(lastmove != "left" && swapA + 1 <= quantity && blocks[swapA + 1].y == blocks[swapA].y) {
+    if(X.lastmove != "left" && swapA + 1 <= quantity && blocks[swapA + 1].y == blocks[swapA].y) {
         swap("right");
         stateId++;
         temp.push(new State(stateId, createNewBlocks(blocks), parentId, "right", "right", X.numberOfSteps + 1, numberOfMistakes()));
