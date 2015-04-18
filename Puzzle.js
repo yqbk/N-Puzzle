@@ -4,94 +4,57 @@
  * and open the template in the editor.
  */
 var test = [new State(0,0,0,0,0,1,2),new State(0,0,0,0,0,1,1),new State(0,0,0,0,0,0,2),new State(0,0,0,0,0,1,0),new State(0,0,0,0,0,4,0),new State(0,0,0,0,0,4,2)];
-
-//var test2 = deepCopy(test);
-//test[0].id = 9;
-
-//alert(test[0].id);
-//alert(test2[0].id);
-//alert([test[0].numberOfMistakes + test[0].numberOfSteps, test[1].numberOfMistakes + test[1].numberOfSteps, test[2].numberOfMistakes + test[2].numberOfSteps, test[3].numberOfMistakes + test[3].numberOfSteps, test[4].numberOfMistakes + test[4].numberOfSteps, test[5].numberOfMistakes + test[5].numberOfSteps]);
-//sort(test);
-//var Y = test[0];
-//test.splice(0,1);
-//alert([test[0].numberOfMistakes + test[0].numberOfSteps, test[1].numberOfMistakes + test[1].numberOfSteps, test[2].numberOfMistakes + test[2].numberOfSteps, test[3].numberOfMistakes + test[3].numberOfSteps, test[4].numberOfMistakes + test[4].numberOfSteps, test[5].numberOfMistakes + test[5].numberOfSteps]);
-//var arg = new State(0,0,0,0,0,0);s
-
-//test.sort(function(a,b) { return parseFloat(a.numberOfMistakes) - parseFloat(b.numberOfMistakes) } );
-//alert(Y.blocks);
-    
-   
-    
+ 
+ //Field properties
 var canvas = document.getElementById('canvas');
 if (canvas.getContext){
     var c = canvas.getContext('2d');
     var WIDTH = 500;
     var HEIGHT = 500;
-    var qX = 4;
-    var qY = 4;
+    var qX = 6;
+    var qY = 6;
     var quantity = qX * qY - 1;
     var blockWidth = WIDTH/qX;
-    var blockHeight = HEIGHT/qY;
+    var blockHeight = HEIGHT/qY;    
     
-   /*
-    for(var i = 0; i < qX; i++) {
-        for(var j = 0; j < qY; j++) {
-            //c.strokeRect(i * blockWidth, j * blockHeight, blockWidth, blockHeight);
-        }
-    }
-    */
     var blocks = new Array();
     for(var i = 0; i < qY; i++) {
         for(var j = 0; j < qX; j++) {
             blocks.push(new Block(j * blockWidth, i * blockHeight, blockWidth, j + i * qY + 1, j + i * qY));
         }
     }
-      
+    
     var current = quantity;
     blocks[current].visible = false;
     var lastmove = "none";
     
+    //Generaing entrophy
     for(var i = 0; i < 26; i++) {
         mix(blocks);
     }
     
-    //var myVar = setInterval(function () {mix(blocks); drawField(c, blocks, 0, 0, 1)}, 100);
-    lastmove = "none";
-    
+    //Array of wanted solution
+    lastmove = "none";    
     var endStateValues = [];
-    for(var i = 0; i <= quantity; i++) endStateValues.push(i+1);
-    
-    //alert(solvable());
-    
-    //alert(numberOfMistakes());
+    for(var i = 0; i <= quantity; i++) 
+        endStateValues.push(i+1);    
+
+    //Draw fileds of blocks
     drawField(c, blocks, 0, 0, 1);
-    //alert(getInvisible());
-    
-    //sovable();
-    
-    var currentState = new State(0, blocks, 0, "none", "none", 0, numberOfMistakes());
-    
-    var startState = deepCopy(currentState);
-    
+
+    //Variables init
+    var currentState = new State(0, blocks, 0, "none", "none", 0, numberOfMistakes());    
+    var startState = deepCopy(currentState);    
     var endState;
-    var final;
-    
+    var final;    
     var open = [startState];
     var close = [];
     var X;
     var stateId = 0;
-    var answer = [];
-    
+    var answer = [];    
     var done = false;
-    //alert([close.length, open.length]);
- 
-    //var k = 0;
-    //while(!solution() && k < 10000) {
-    //    k++;
-    //} 
-    //alert(k);
-    //drawClose(c);
    
+   //Test for solution with IDA algoithm
    if(solutionIDA(startState) == -1) {
         alert("Uda³o siê!!!");
         done = true;
@@ -99,40 +62,19 @@ if (canvas.getContext){
         alert("Nie uda³o siê...");
     }
     if(done) {
-        drawSolution2();
-        //alert(close.length);
+        drawSolution();
         animation();
-    }
-}
-    
-    
-function drawSolution() {
-    var temp = deepCopy(X);
-    
-    var p = 0;
-    while(temp.id != 0 && p <= 100) {
-        p++;
-        for(var j = 0; j < close.length; j++) {
-            if(close[j].id == temp.parentId) {
-                //alert("jest!");
-                answer.push(temp.swap);
-                temp = deepCopy(close[j]);
-                break;
-            }
-        }
     }
 }    
 
-
-function drawSolution2() {
-    var temp = deepCopy(final);
-    
+function drawSolution() {
+    var temp = deepCopy(final);    
     var p = 0;
+    
     while(temp.id != 0 && p <= 100) {
         p++;
         for(var j = 0; j < close.length; j++) {
             if(close[j].id == temp.parentId) {
-                //alert("jest!");
                 answer.push(temp.swap);
                 temp = deepCopy(close[j]);
                 break;
@@ -147,25 +89,23 @@ function animation() {
     var v = setInterval(function () {if(i >= 0){swap(answer[i])}; i--; drawField(c, blocks, 0, 0, 1)}, 500);
 }
     
-function drawOpen(c) {
-    
+function drawOpen(c) {    
     var scale = 0.3;
+    
     for(var i = 0; i < open.length; i++) {
         drawField(c, open[i].blocks, 10 + 566 * scale * i, 550 + 500 * scale * open[i].numberOfSteps, scale);  
         c.fillText("Id:" + open[i].id + " | ParentId:" + open[i].parentId, 10 + 566 * scale * i, 540 + 500 * scale * open[i].numberOfSteps);
-
-    }  
-    
+    }      
 }
 
 function drawClose(c) {
     var scale = 0.25;
+    
     for(var i = 0; i < close.length; i++) {
         drawField(c, close[i].blocks, 10 + 566 * scale * i, 550 + 500 * scale * close[i].numberOfSteps, scale);     
         c.fillText("Id:" + close[i].id + " | ParentId:" + close[i].parentId + " | Step:" + close[i].numberOfSteps + " | Mist:" + close[i].numberOfMistakes, 10 + 566 * scale * i, 540 + 500 * scale * close[i].numberOfSteps);
     }  
 }
-
 
 function Block(x, y, size, value, index) {
     this.x = x;
@@ -203,19 +143,20 @@ function sort(state) {
         });
 }
 
-function setState(state) {
-    
+function setState(state) {    
     blocks = createNewBlocks(state.blocks);
 }
 
 function deepCopy(p,c) { 
     var c = c||{}; 
+    
     for (var i in p) {   
         if (typeof p[i] === 'object') {     
             c[i] = (p[i].constructor === Array)?[]:{};     
             deepCopy(p[i],c[i]);   
         } else c[i] = p[i];
     } 
+    
     return c; 
 }
 
@@ -234,7 +175,7 @@ function generateChildren(X) {
     var temp = [];
     var swapA = getInvisible();
     var parentId = X.id;
-    //alert(X.lastmove);
+
     
     if(X.lastmove != "down" && swapA - qX >= 0) {
         swap("up");
@@ -267,8 +208,10 @@ function generateChildren(X) {
 function compareState(state, values) {
     
     for(var i = 0; i < state.blocks.length; i++) {
-        if(state.blocks[i].value != values[i]) return false;
+        if(state.blocks[i].value != values[i]) 
+            return false;
     }
+    
     return true;
 }
 
@@ -280,6 +223,7 @@ function solution() {
        close.push(deepCopy(X));
        alert("Uda³o siê!    Liczba sprawdzeñ: " + k);
        done = true;
+       
        return true;
     } else {
        open.splice(0,1);
@@ -290,16 +234,19 @@ function solution() {
                     open.push(deepCopy(children[i]));
                 } 
             }
-        //alert([open.length]);
+
         close.push(deepCopy(X));
         sort(open);
+        
         return false;
     }
 }
 
 function solutionIDA(root) {
-   setState(root);
+    
+   setState(root);   
    var bound = root.numberOfMistakes;
+   
    while(1) {
        var t = search(root, 0, bound);
        if (t == -1) return -1;
@@ -309,35 +256,42 @@ function solutionIDA(root) {
 }
 
 function search(node, g, bound) {
+    
     close.push(node);
     var f = g + node.numberOfMistakes;
-    if (f > bound) return f;
+    
+    if (f > bound) 
+        return f;
     if (node.numberOfMistakes == 0) {
         final = deepCopy(node);
         return -1;
     }
+    
     var min = 1000;
     setState(node);
     var children = generateChildren(node);
-        for(var i = 0; i < children.length; i++) {
-            var t = search(children[i], children[i].numberOfSteps, bound);
-            if (t == -1) return -1;
-            close.pop();
-            if (t < min) min = t;
-        }
+        
+    for(var i = 0; i < children.length; i++) {    
+        var t = search(children[i], children[i].numberOfSteps, bound);        
+        if (t == -1) return -1;        
+        close.pop();        
+        if (t < min) min = t;        
+    }
     return min;
 }
 
 function drawField(c, blocks, x, y, scale) {
+    
     c.clearRect(x,y, qX * blocks[0].size * scale, qY *blocks[0].size * scale);
     c.strokeRect(0,0,WIDTH,HEIGHT);
+    
     for(var i = 0; i < qX * qY; i++) {
         if(blocks[i].visible) blocks[i].draw(c, x, y, scale);
-        //blocks[i].drawIndex(c);
     }
 }
 
 function swap(side) {
+    
     var swapA = getInvisible();
     var swapB = 0;
     var change = false;
@@ -378,6 +332,7 @@ function swap(side) {
 }
 
 function solvable() {
+    
     var sumMain = 0;
     var sumTemp = 0;
     
@@ -386,16 +341,16 @@ function solvable() {
             if(blocks[j].value < blocks[i].value) sumTemp++;
         }
         sumMain += sumTemp;
-        //alert(sumTemp);
         sumTemp = 0;
     }
-    //alert(sumMain);
+    
     return sumMain;
 }
 
 function getInvisible() {
     
     var i = -1;
+    
     do {
         i++;
     } while(blocks[i].visible != false);
@@ -404,51 +359,55 @@ function getInvisible() {
 }
 
 function mix(blocks) {
+    
     var change;
-    var swapA = getInvisible();
-    //for(var i = 0; i < 15; i++)
-    //{
-        change = false;
-        while(!change) {
-            var rand = Math.floor(Math.random() * 4);
-            if (rand == 0 && lastmove != "down" && swapA - qX >= 0) {
-                swap("up");
-                change = true;
-            }
-            if (rand == 1 && lastmove != "up" && swapA + qX <= quantity) {
-                swap("down");
-                change = true;
-            }
-            if (rand == 2 && lastmove != "right" && swapA - 1 >= 0 && blocks[swapA - 1].y == blocks[swapA].y) {
-                swap("left");
-                change = true;
-            }
-            if (rand == 3 && lastmove != "left" && swapA + 1 <= quantity && blocks[swapA + 1].y == blocks[swapA].y) {
-                swap("right");
-                change = true;
-            }
-        }       
-        //alert([rand1, rand2]);
-    //}
+    var swapA = getInvisible();        
+    change = false;
+    
+    while(!change) {  
+        
+        var rand = Math.floor(Math.random() * 4);
+        
+        if (rand == 0 && lastmove != "down" && swapA - qX >= 0) {        
+            swap("up");            
+            change = true;            
+        }        
+        
+        if (rand == 1 && lastmove != "up" && swapA + qX <= quantity) {        
+            swap("down");            
+            change = true;            
+        }
+        
+        if (rand == 2 && lastmove != "right" && swapA - 1 >= 0 && blocks[swapA - 1].y == blocks[swapA].y) {        
+            swap("left");            
+            change = true;            
+        }
+        
+        if (rand == 3 && lastmove != "left" && swapA + 1 <= quantity && blocks[swapA + 1].y == blocks[swapA].y) {        
+            swap("right");            
+            change = true;            
+        }        
+    }       
 }
 
 function getValue(value) {
     
     var i = -1;
+    
     do {
         i++;
     } while(box[i].value != value);
+    
     return i;
 }
 
-
 function numberOfMistakes() {
+    
     var sum = 0;
+    
     for(var i = 0; i <= quantity; i++) {
         if(blocks[i].value != endStateValues[i] && blocks[i].visible) sum++;
     }
+    
     return sum;
 }
-
-
-
