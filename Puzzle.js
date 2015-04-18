@@ -46,14 +46,15 @@ if (canvas.getContext){
             blocks.push(new Block(j * blockWidth, i * blockHeight, blockWidth, j + i * qY + 1, j + i * qY));
         }
     }
-    
- 
+      
     var current = quantity;
     blocks[current].visible = false;
     var lastmove = "none";
-    for(var i = 0; i < 20; i++) {
+    
+    for(var i = 0; i < 26; i++) {
         mix(blocks);
     }
+    
     //var myVar = setInterval(function () {mix(blocks); drawField(c, blocks, 0, 0, 1)}, 100);
     lastmove = "none";
     
@@ -62,7 +63,7 @@ if (canvas.getContext){
     
     //alert(solvable());
     
-    
+    //alert(numberOfMistakes());
     drawField(c, blocks, 0, 0, 1);
     //alert(getInvisible());
     
@@ -71,8 +72,9 @@ if (canvas.getContext){
     var currentState = new State(0, blocks, 0, "none", "none", 0, numberOfMistakes());
     
     var startState = deepCopy(currentState);
-    var endState;
     
+    var endState;
+    var final;
     
     var open = [startState];
     var close = [];
@@ -83,20 +85,25 @@ if (canvas.getContext){
     var done = false;
     //alert([close.length, open.length]);
  
-    var k = 0;
-    while(!solution() && k < 10000) {
-        k++;
-    } 
+    //var k = 0;
+    //while(!solution() && k < 10000) {
+    //    k++;
+    //} 
     //alert(k);
-    drawClose(c);
+    //drawClose(c);
    
+   if(solutionIDA(startState) == -1) {
+        alert("Uda³o siê!!!");
+        done = true;
+    } else {
+        alert("Nie uda³o siê...");
+    }
     if(done) {
-        drawSolution();
-        //alert([answer]);
+        drawSolution2();
+        //alert(close.length);
         animation();
     }
-    
-    }
+}
     
     
 function drawSolution() {
@@ -115,6 +122,24 @@ function drawSolution() {
         }
     }
 }    
+
+
+function drawSolution2() {
+    var temp = deepCopy(final);
+    
+    var p = 0;
+    while(temp.id != 0 && p <= 100) {
+        p++;
+        for(var j = 0; j < close.length; j++) {
+            if(close[j].id == temp.parentId) {
+                //alert("jest!");
+                answer.push(temp.swap);
+                temp = deepCopy(close[j]);
+                break;
+            }
+        }
+    }
+}   
 
 function animation() {
     setState(startState);
@@ -173,7 +198,9 @@ function State(id, blocks, parentId, swap, lastmove, numberOfSteps, numberOfMist
 }
 
 function sort(state) {
-    state.sort(function(a,b) { return parseFloat(a.numberOfMistakes + a.numberOfSteps) - parseFloat(b.numberOfMistakes + b.numberOfSteps) } );
+    state.sort(function(a,b) { 
+        return parseFloat(a.numberOfMistakes + a.numberOfSteps) - parseFloat(b.numberOfMistakes + b.numberOfSteps) 
+        });
 }
 
 function setState(state) {
@@ -181,7 +208,16 @@ function setState(state) {
     blocks = createNewBlocks(state.blocks);
 }
 
-function deepCopy(p,c) { var c = c||{}; for (var i in p) {   if (typeof p[i] === 'object') {     c[i] = (p[i].constructor === Array)?[]:{};     deepCopy(p[i],c[i]);   } else c[i] = p[i];} return c; }
+function deepCopy(p,c) { 
+    var c = c||{}; 
+    for (var i in p) {   
+        if (typeof p[i] === 'object') {     
+            c[i] = (p[i].constructor === Array)?[]:{};     
+            deepCopy(p[i],c[i]);   
+        } else c[i] = p[i];
+    } 
+    return c; 
+}
 
 function createNewBlocks(blocks) {
     temp = [];
@@ -193,7 +229,7 @@ function createNewBlocks(blocks) {
     return temp;
 }
 
-function generateChildren() {
+function generateChildren(X) {
     
     var temp = [];
     var swapA = getInvisible();
@@ -242,23 +278,54 @@ function solution() {
    
    if(compareState(X, endStateValues)) {
        close.push(deepCopy(X));
-       if(!done) alert("Uda³o siê!    Liczba sprawdzeñ: " + k);
+       alert("Uda³o siê!    Liczba sprawdzeñ: " + k);
        done = true;
        return true;
     } else {
        open.splice(0,1);
        setState(X);
-       var children = generateChildren();
+       var children = generateChildren(X);
             for(var i = 0; i < children.length; i++) {
                 if(open.indexOf(children[i]) == -1 && close.indexOf(children[i]) == -1) {
                     open.push(deepCopy(children[i]));
-                }
+                } 
             }
         //alert([open.length]);
         close.push(deepCopy(X));
         sort(open);
         return false;
     }
+}
+
+function solutionIDA(root) {
+   setState(root);
+   var bound = root.numberOfMistakes;
+   while(1) {
+       var t = search(root, 0, bound);
+       if (t == -1) return -1;
+       if (t ==  1000) return 1000;
+       bound = t;
+   }
+}
+
+function search(node, g, bound) {
+    close.push(node);
+    var f = g + node.numberOfMistakes;
+    if (f > bound) return f;
+    if (node.numberOfMistakes == 0) {
+        final = deepCopy(node);
+        return -1;
+    }
+    var min = 1000;
+    setState(node);
+    var children = generateChildren(node);
+        for(var i = 0; i < children.length; i++) {
+            var t = search(children[i], children[i].numberOfSteps, bound);
+            if (t == -1) return -1;
+            close.pop();
+            if (t < min) min = t;
+        }
+    return min;
 }
 
 function drawField(c, blocks, x, y, scale) {
