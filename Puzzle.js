@@ -3,16 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-var test = [new State(0,0,0,0,0,1,2),new State(0,0,0,0,0,1,1),new State(0,0,0,0,0,0,2),new State(0,0,0,0,0,1,0),new State(0,0,0,0,0,4,0),new State(0,0,0,0,0,4,2)];
- 
+
  //Field properties
 var canvas = document.getElementById('canvas');
 if (canvas.getContext){
     var c = canvas.getContext('2d');
+    c.clearRect(0,0, 1500, 1500);
     var WIDTH = 500;
     var HEIGHT = 500;
-    var qX = 6;
-    var qY = 6;
+    var qX = 4;
+    var qY = 4;
     var quantity = qX * qY - 1;
     var blockWidth = WIDTH/qX;
     var blockHeight = HEIGHT/qY;    
@@ -29,8 +29,9 @@ if (canvas.getContext){
     var lastmove = "none";
     
     //Generaing entrophy
-    for(var i = 0; i < 26; i++) {
-        mix(blocks);
+    var changes = 25;
+    for(var i = 0; i < changes; i++) {
+       mix(blocks);
     }
     
     //Array of wanted solution
@@ -40,7 +41,8 @@ if (canvas.getContext){
         endStateValues.push(i+1);    
 
     //Draw fileds of blocks
-    drawField(c, blocks, 0, 0, 1);
+    
+    
 
     //Variables init
     var currentState = new State(0, blocks, 0, "none", "none", 0, numberOfMistakes());    
@@ -53,19 +55,84 @@ if (canvas.getContext){
     var stateId = 0;
     var answer = [];    
     var done = false;
-   
-   //Test for solution with IDA algoithm
+    var speedOfAnimaton = 5;
+    var speedOfMoves = 1;
+    
+    var imagePieces = [];
+    var image = new Image();
+    image.src = 'ml.png';
+    image.onload = function() {
+        drawField(c, blocks, 0, 0, 1);
+    }
+    
+    
+   //Test for solution with IDA* algoithm
    if(solutionIDA(startState) == -1) {
-        alert("Uda³o siê!!!");
+        //alert("Uda³o siê!!!");
+        c.font = "bold 25px Arial";
+        c.fillText("Uda³o siê rozwi¹zaæ.", 600, 100);
         done = true;
+        drawClose(c, 0, 1, 0.5);
     } else {
         alert("Nie uda³o siê...");
     }
     if(done) {
         drawSolution();
-        animation();
+        c.font = "bold 25px Arial";
+        c.fillText("Liczba ruchów mieszaj¹cych: " + changes, 600, 200);
+        c.fillText("Liczba ruchów prowadz¹cych do rozwi¹zania: " + answer.length, 600, 230);
+        
+        setState(startState);
+        var idInt;
+        var invId;
+        invId = getInvisible();
+        var iterator = 0;
+        var sidesIt = answer.length - 1;
+        idInt = setInterval(animate, speedOfAnimaton);
+        
+        //animation();
     }
+    
+    
 }    
+
+function animate() {
+    if(answer[sidesIt] == "left") blocks[invId - 1].x+=speedOfMoves;
+    if(answer[sidesIt] == "right") blocks[invId + 1].x-=speedOfMoves;
+    if(answer[sidesIt] == "up") blocks[invId - qX].y+=speedOfMoves;
+    if(answer[sidesIt] == "down") blocks[invId + qX].y-=speedOfMoves;
+    
+    drawField(c, blocks, 0, 0, 1);
+    iterator+=speedOfMoves;
+    if(iterator >= blockWidth || iterator >= blockHeight) {
+        clearInterval(idInt);
+        if(answer[sidesIt] == "left") blocks[invId - 1].x-=iterator;
+        if(answer[sidesIt] == "right") blocks[invId + 1].x+=iterator;
+        if(answer[sidesIt] == "up") blocks[invId - qX].y-=iterator;
+        if(answer[sidesIt] == "down") blocks[invId + qX].y+=iterator;
+        swap(answer[sidesIt]);
+        invId = getInvisible();
+        iterator = 0;
+        sidesIt--;
+        if(sidesIt >= 0) idInt = setInterval(animate, speedOfAnimaton);
+    }
+}
+
+function right() {
+    a+=1;
+    c.strokeRect(a, b, 10, 10);
+    if (a >= 300) {
+        clearInterval(idInt);
+        idInt = setInterval(left, 10);
+    }
+}
+
+function left() {
+    b++;
+    c.strokeRect(a, b, 10, 10);
+    if (b >= 300) clearInterval(idInt);
+}
+
 
 function drawSolution() {
     var temp = deepCopy(final);    
@@ -89,8 +156,7 @@ function animation() {
     var v = setInterval(function () {if(i >= 0){swap(answer[i])}; i--; drawField(c, blocks, 0, 0, 1)}, 500);
 }
     
-function drawOpen(c) {    
-    var scale = 0.3;
+function drawOpen(c, start, end, scale) {    
     
     for(var i = 0; i < open.length; i++) {
         drawField(c, open[i].blocks, 10 + 566 * scale * i, 550 + 500 * scale * open[i].numberOfSteps, scale);  
@@ -98,10 +164,9 @@ function drawOpen(c) {
     }      
 }
 
-function drawClose(c) {
-    var scale = 0.25;
+function drawClose(c, start, end, scale) {
     
-    for(var i = 0; i < close.length; i++) {
+    for(var i = start; i < end; i++) {
         drawField(c, close[i].blocks, 10 + 566 * scale * i, 550 + 500 * scale * close[i].numberOfSteps, scale);     
         c.fillText("Id:" + close[i].id + " | ParentId:" + close[i].parentId + " | Step:" + close[i].numberOfSteps + " | Mist:" + close[i].numberOfMistakes, 10 + 566 * scale * i, 540 + 500 * scale * close[i].numberOfSteps);
     }  
@@ -119,6 +184,8 @@ function Block(x, y, size, value, index) {
         c.strokeRect(this.x * scale + x, this.y * scale + y, this.size * scale, this.size * scale);
         c.font = "bold " + 30 * scale + "px Arial";
         c.fillText(this.value.toString(), this.x * scale + this.size * scale/2 + x, this.y * scale + this.size * scale/2 + y);
+        c.drawImage(image, ((this.value - 1) % qX) * 250, 250 * Math.round((this.value - 3) / qX), 250, 250, x + this.x * scale, y + this.y * scale, this.size * scale, this.size * scale);
+        //alert(this.value + " "  + (this.value - 1) % qX + " " + Math.round((this.value - 1) / qX));
     }
     
     this.drawIndex = function(c) {
@@ -262,7 +329,7 @@ function search(node, g, bound) {
     
     if (f > bound) 
         return f;
-    if (node.numberOfMistakes == 0) {
+    if (node.numberOfMistakes <= 0) {
         final = deepCopy(node);
         return -1;
     }
@@ -291,7 +358,7 @@ function drawField(c, blocks, x, y, scale) {
 }
 
 function swap(side) {
-    
+    //alert("robie swap");
     var swapA = getInvisible();
     var swapB = 0;
     var change = false;
