@@ -8,7 +8,7 @@
 var canvas = document.getElementById('canvas');
 if (canvas.getContext){
     var c = canvas.getContext('2d');
-    c.clearRect(0,0, 1500, 1500);
+    c.clearRect(0,0, 500, 625);
     var WIDTH = 500;
     var HEIGHT = 500;
     var qX = 4;
@@ -31,7 +31,7 @@ if (canvas.getContext){
     //Generaing entrophy
     var changes = 25;
     for(var i = 0; i < changes; i++) {
-       mix(blocks);
+       //mix(blocks);
     }
     
     //Array of wanted solution
@@ -42,8 +42,6 @@ if (canvas.getContext){
 
     //Draw fileds of blocks
     
-    
-
     //Variables init
     var currentState = new State(0, blocks, 0, "none", "none", 0, numberOfMistakes());    
     var startState = deepCopy(currentState);    
@@ -57,64 +55,178 @@ if (canvas.getContext){
     var done = false;
     var speedOfAnimaton = 5;
     var speedOfMoves = 1;
-    
+    var idInt;
     var imagePieces = [];
     var image = new Image();
+    var imageWidth;
+    var imageHeight;
     image.src = 'ml.png';
     image.onload = function() {
+        imageWidth = this.width;
+        imageHeight = this.height;
         drawField(c, blocks, 0, 0, 1);
     }
     
-    
-   //Test for solution with IDA* algoithm
-   if(solutionIDA(startState) == -1) {
-        //alert("Uda³o siê!!!");
-        c.font = "bold 25px Arial";
-        c.fillText("Uda³o siê rozwi¹zaæ.", 600, 100);
-        done = true;
-        drawClose(c, 0, 1, 0.5);
-    } else {
-        alert("Nie uda³o siê...");
-    }
-    if(done) {
-        drawSolution();
-        c.font = "bold 25px Arial";
-        c.fillText("Liczba ruchów mieszaj¹cych: " + changes, 600, 200);
-        c.fillText("Liczba ruchów prowadz¹cych do rozwi¹zania: " + answer.length, 600, 230);
-        
-        setState(startState);
-        var idInt;
-        var invId;
-        invId = getInvisible();
-        var iterator = 0;
-        var sidesIt = answer.length - 1;
-        idInt = setInterval(animate, speedOfAnimaton);
-        
-        //animation();
-    }
-    
-    
+    var animation = false;
+    var reset = false;
+    var solve = false;
+    var mixing = true;
+   
+    var invId = getInvisible();
+    var iterator = 0;
+    var sidesIt = answer.length - 1;
+    idInt = setInterval(animate, speedOfAnimaton);
 }    
+    
+document.getElementById("speed").onchange = function() {
+    speedOfMoves = Number(document.getElementById("speed").value);
+}
+
+document.getElementById("reset").onclick = function() {
+        reset = true;
+        mixing = true;
+    }
+    
+document.getElementById("solution").onclick = function() {
+        reset = true;
+        mixing = false;
+    }
+    
+document.getElementById("3x3").onclick = function() {
+        qX = 3;
+        qY = 3;
+        endStateValues = [];
+        quantity = qX * qY - 1;
+        for(var i = 0; i <= quantity; i++) endStateValues.push(i+1); 
+        blockWidth = WIDTH/qX;
+        blockHeight = HEIGHT/qY;  
+        reset = true;
+        mixing = false;
+    }
+    
+document.getElementById("4x4").onclick = function() {
+        qX = 4;
+        qY = 4;
+        endStateValues = [];
+        quantity = qX * qY - 1;
+        for(var i = 0; i <= quantity; i++) endStateValues.push(i+1); 
+        blockWidth = WIDTH/qX;
+        blockHeight = HEIGHT/qY;  
+        reset = true;
+        mixing = false;
+    }
+    
+ document.getElementById("5x5").onclick = function() {
+        qX = 5;
+        qY = 5;
+        endStateValues = [];
+        quantity = qX * qY - 1;
+        for(var i = 0; i <= quantity; i++) endStateValues.push(i+1); 
+        blockWidth = WIDTH/qX;
+        blockHeight = HEIGHT/qY;  
+        reset = true;
+        mixing = false;
+    }
+    
+document.getElementById("solve").onclick = function() {
+        solve = true;
+        
+    }
 
 function animate() {
-    if(answer[sidesIt] == "left") blocks[invId - 1].x+=speedOfMoves;
-    if(answer[sidesIt] == "right") blocks[invId + 1].x-=speedOfMoves;
-    if(answer[sidesIt] == "up") blocks[invId - qX].y+=speedOfMoves;
-    if(answer[sidesIt] == "down") blocks[invId + qX].y-=speedOfMoves;
     
-    drawField(c, blocks, 0, 0, 1);
-    iterator+=speedOfMoves;
-    if(iterator >= blockWidth || iterator >= blockHeight) {
-        clearInterval(idInt);
-        if(answer[sidesIt] == "left") blocks[invId - 1].x-=iterator;
-        if(answer[sidesIt] == "right") blocks[invId + 1].x+=iterator;
-        if(answer[sidesIt] == "up") blocks[invId - qX].y-=iterator;
-        if(answer[sidesIt] == "down") blocks[invId + qX].y+=iterator;
-        swap(answer[sidesIt]);
+    if(solve && !animation) {
+        c.clearRect(0,0, 500, 625); 
+        drawField(c, blocks, 0, 0, 1);
+        done = false;
+        if(solutionIDA(startState) == -1) {
+            //alert("Uda³o siê!!!");
+            c.font = "bold 25px Arial";
+            c.fillText("Uda³o siê rozwi¹zaæ.", 10, 550);
+            done = true;
+            //drawClose(c, 0, 1, 0.5);
+        } else {
+            alert("Nie uda³o siê...");
+            }
+            if(done) {
+                drawSolution();
+                c.font = "bold 20px Arial";
+                c.fillText("Liczba ruchów mieszaj¹cych: " + changes, 10, 600);
+                c.fillText("Liczba ruchów prowadz¹cych do rozwi¹zania: " + answer.length, 10, 625);
+
+                iterator = 0;
+                sidesIt = answer.length - 1;
+                setState(startState);
+
+                }
+        solve = false;
+        animation = true;
+        }
+    
+    if(reset) {
+        c.clearRect(0,0, 500, 625);  
+        blocks = new Array();
+        for(var i = 0; i < qY; i++) {
+            for(var j = 0; j < qX; j++) {
+                blocks.push(new Block(j * blockWidth, i * blockHeight, blockWidth, j + i * qY + 1, j + i * qY));
+            }
+        }
+        current = quantity;
+        blocks[current].visible = false;
+        lastmove = "none";
+
+        if(mixing) {
+            for(var i = 0; i < changes; i++) {
+               mix(blocks);
+            }
+        }
+
+        //Array of wanted solution
+        lastmove = "none";       
+        currentState = new State(0, blocks, 0, "none", "none", 0, numberOfMistakes());    
+        startState = deepCopy(currentState); 
+        //Draw fileds of blocks
+
+        //Variables init  
+        open = [startState];
+        close = [];
+        stateId = 0;
+        answer = [];    
+        done = false;
+        speedOfAnimaton = 5;
+
+        drawField(c, blocks, 0, 0, 1);
+
+        animation = false;
+        reset = false;
+        solve = false;
+
+
         invId = getInvisible();
         iterator = 0;
-        sidesIt--;
-        if(sidesIt >= 0) idInt = setInterval(animate, speedOfAnimaton);
+        sidesIt = answer.length - 1;
+    }
+    
+    if(animation) {
+        if(answer[sidesIt] == "left") blocks[invId - 1].x+=speedOfMoves;
+        if(answer[sidesIt] == "right") blocks[invId + 1].x-=speedOfMoves;
+        if(answer[sidesIt] == "up") blocks[invId - qX].y+=speedOfMoves;
+        if(answer[sidesIt] == "down") blocks[invId + qX].y-=speedOfMoves;
+
+        drawField(c, blocks, 0, 0, 1);
+        iterator+=speedOfMoves;
+        if(iterator >= blockWidth || iterator >= blockHeight) {
+
+            if(answer[sidesIt] == "left") blocks[invId - 1].x-=iterator;
+            if(answer[sidesIt] == "right") blocks[invId + 1].x+=iterator;
+            if(answer[sidesIt] == "up") blocks[invId - qX].y-=iterator;
+            if(answer[sidesIt] == "down") blocks[invId + qX].y+=iterator;
+            swap(answer[sidesIt]);
+            invId = getInvisible();
+            iterator = 0;
+            sidesIt--;
+            if(sidesIt >= 0) setTimeout(animate, speedOfAnimaton);
+        }
     }
 }
 
@@ -184,7 +296,7 @@ function Block(x, y, size, value, index) {
         c.strokeRect(this.x * scale + x, this.y * scale + y, this.size * scale, this.size * scale);
         c.font = "bold " + 30 * scale + "px Arial";
         c.fillText(this.value.toString(), this.x * scale + this.size * scale/2 + x, this.y * scale + this.size * scale/2 + y);
-        c.drawImage(image, ((this.value - 1) % qX) * 250, 250 * Math.round((this.value - 3) / qX), 250, 250, x + this.x * scale, y + this.y * scale, this.size * scale, this.size * scale);
+        c.drawImage(image, ((this.value - 1) % qX) * imageHeight/qX, imageHeight/qX * Math.round((this.value - 3) / qX), imageHeight/qX, imageHeight/qX, x + this.x * scale, y + this.y * scale, this.size * scale, this.size * scale);
         //alert(this.value + " "  + (this.value - 1) % qX + " " + Math.round((this.value - 1) / qX));
     }
     

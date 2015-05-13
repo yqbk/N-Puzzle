@@ -12,10 +12,25 @@ and open the template in the editor.
     </head>
     <body>
         <div>
-            
-            <canvas width="2000" height="2000" id="canvas">
-    ...treœæ alternatywna...
-            </canvas>
+            <form>
+                Szybkoœæ animacji:
+                <br/>
+                <select id="speed">
+                <option value="1">x1</option>
+                <option value="0.5">x0.5</option>
+                <option value="2">x2</option>
+                <option value="3">x3</option>
+                </select>
+                <br/><br/>
+            <input type="button" id="3x3" value="3x3 Jeszcze nie dzia³a"/>
+            <input type="button" id="4x4" value="4x4"/>
+            <input type="button" id="5x5" value="5x5"/>
+            <input type="button" id="solution" value="Fix"/>
+            <input type="button" id="reset" value="Mix"/>
+            <input type="button" id="solve" value="Solve"/>
+            <br/><br/>
+            </form>
+            <canvas width="500" height="625" id="canvas"></canvas>
             <script type="text/javascript" src="Puzzle.js"></script>
         </div>
     </body>
