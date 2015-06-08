@@ -1,10 +1,3 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
- //Field properties
 var canvas = document.getElementById('canvas');
 if (canvas.getContext){
     var c = canvas.getContext('2d');
@@ -16,6 +9,7 @@ if (canvas.getContext){
     var quantity = qX * qY - 1;
     var blockWidth = WIDTH/qX;
     var blockHeight = HEIGHT/qY;    
+    var maxMoves = 0;
     
     var blocks = new Array();
     for(var i = 0; i < qY; i++) {
@@ -43,11 +37,11 @@ if (canvas.getContext){
     //Draw fileds of blocks
     
     //Variables init
+    var mistake = 0;
     var currentState = new State(0, blocks, 0, "none", "none", 0, numberOfMistakes());    
-    var startState = deepCopy(currentState);    
+    var startState = currentState;    
     var endState;
-    var final;    
-    var open = [startState];
+    var final;
     var close = [];
     var X;
     var stateId = 0;
@@ -85,6 +79,7 @@ document.getElementById("speed").onchange = function() {
 document.getElementById("reset").onclick = function() {
         reset = true;
         mixing = true;
+        changes = parseInt(document.getElementById("moves").value);
     }
     
 document.getElementById("solution").onclick = function() {
@@ -92,33 +87,10 @@ document.getElementById("solution").onclick = function() {
         mixing = false;
     }
     
-document.getElementById("3x3").onclick = function() {
-        qX = 3;
-        qY = 3;
-        endStateValues = [];
-        quantity = qX * qY - 1;
-        for(var i = 0; i <= quantity; i++) endStateValues.push(i+1); 
-        blockWidth = WIDTH/qX;
-        blockHeight = HEIGHT/qY;  
-        reset = true;
-        mixing = false;
-    }
-    
-document.getElementById("4x4").onclick = function() {
-        qX = 4;
-        qY = 4;
-        endStateValues = [];
-        quantity = qX * qY - 1;
-        for(var i = 0; i <= quantity; i++) endStateValues.push(i+1); 
-        blockWidth = WIDTH/qX;
-        blockHeight = HEIGHT/qY;  
-        reset = true;
-        mixing = false;
-    }
-    
- document.getElementById("5x5").onclick = function() {
-        qX = 5;
-        qY = 5;
+document.getElementById("size").onchange = function() {
+        qX = parseInt(document.getElementById("size").value);
+        qY = parseInt(document.getElementById("size").value);
+        //changes = 25;
         endStateValues = [];
         quantity = qX * qY - 1;
         for(var i = 0; i <= quantity; i++) endStateValues.push(i+1); 
@@ -129,10 +101,28 @@ document.getElementById("4x4").onclick = function() {
     }
     
 document.getElementById("solve").onclick = function() {
+        mistake = document.getElementById("mistake").value;
+        c.clearRect(0, qY * blockHeight, 500, 625);  
+
+        lastmove = "none";       
+        currentState = new State(0, blocks, 0, "none", "none", 0, numberOfMistakes());    
+        startState = currentState; 
+   
+        close = [];
+        stateId = 0;
+        answer = [];    
+        done = false;
+
+        invId = getInvisible();
+        iterator = 0;
+        maxMoves = 0;
         solve = true;
-        
     }
 
+/**
+ * Resets, mixes the board and initilizes the proces of finding solution
+ * 
+ */
 function animate() {
     
     if(solve && !animation) {
@@ -140,20 +130,19 @@ function animate() {
         drawField(c, blocks, 0, 0, 1);
         done = false;
         if(solutionIDA(startState) == -1) {
-            //alert("Uda³o siê!!!");
-            c.font = "bold 25px Arial";
-            c.fillText("Uda³o siê rozwi¹zaæ.", 10, 550);
+            //alert("UdaÅ‚o siÄ™!!!");
+            c.font = "20pt Didact Gothic";
+            c.fillText("It is done!", 10, 550);
             done = true;
-            //drawClose(c, 0, 1, 0.5);
         } else {
-            alert("Nie uda³o siê...");
+            c.fillText("Cannot Solve...", 10, 550);
             }
             if(done) {
                 drawSolution();
-                c.font = "bold 20px Arial";
-                c.fillText("Liczba ruchów mieszaj¹cych: " + changes, 10, 600);
-                c.fillText("Liczba ruchów prowadz¹cych do rozwi¹zania: " + answer.length, 10, 625);
-
+                c.font = "12pt Didact Gothic";
+                c.fillText("Mix Moves " + changes, 10, 600);
+                c.fillText("Fix Moves " + answer.length, 10, 625);
+                //c.fillText("" + [answer], 10, 650);
                 iterator = 0;
                 sidesIt = answer.length - 1;
                 setState(startState);
@@ -181,14 +170,10 @@ function animate() {
             }
         }
 
-        //Array of wanted solution
         lastmove = "none";       
         currentState = new State(0, blocks, 0, "none", "none", 0, numberOfMistakes());    
-        startState = deepCopy(currentState); 
-        //Draw fileds of blocks
+        startState = currentState; 
 
-        //Variables init  
-        open = [startState];
         close = [];
         stateId = 0;
         answer = [];    
@@ -205,6 +190,7 @@ function animate() {
         invId = getInvisible();
         iterator = 0;
         sidesIt = answer.length - 1;
+ 
     }
     
     if(animation) {
@@ -225,29 +211,17 @@ function animate() {
             invId = getInvisible();
             iterator = 0;
             sidesIt--;
-            if(sidesIt >= 0) setTimeout(animate, speedOfAnimaton);
+            if(sidesIt < 0) animation = false;
         }
     }
 }
 
-function right() {
-    a+=1;
-    c.strokeRect(a, b, 10, 10);
-    if (a >= 300) {
-        clearInterval(idInt);
-        idInt = setInterval(left, 10);
-    }
-}
-
-function left() {
-    b++;
-    c.strokeRect(a, b, 10, 10);
-    if (b >= 300) clearInterval(idInt);
-}
-
-
+/**
+ * Finds the certain path from mixed to solved system of puzzles basing on previously creates list of individual stages
+ * 
+ */
 function drawSolution() {
-    var temp = deepCopy(final);    
+    var temp = final;    
     var p = 0;
     
     while(temp.id != 0 && p <= 100) {
@@ -255,35 +229,23 @@ function drawSolution() {
         for(var j = 0; j < close.length; j++) {
             if(close[j].id == temp.parentId) {
                 answer.push(temp.swap);
-                temp = deepCopy(close[j]);
+                temp = close[j];
                 break;
             }
         }
     }
-}   
+}      
 
-function animation() {
-    setState(startState);
-    var i = answer.length - 1;
-    var v = setInterval(function () {if(i >= 0){swap(answer[i])}; i--; drawField(c, blocks, 0, 0, 1)}, 500);
-}
-    
-function drawOpen(c, start, end, scale) {    
-    
-    for(var i = 0; i < open.length; i++) {
-        drawField(c, open[i].blocks, 10 + 566 * scale * i, 550 + 500 * scale * open[i].numberOfSteps, scale);  
-        c.fillText("Id:" + open[i].id + " | ParentId:" + open[i].parentId, 10 + 566 * scale * i, 540 + 500 * scale * open[i].numberOfSteps);
-    }      
-}
-
-function drawClose(c, start, end, scale) {
-    
-    for(var i = start; i < end; i++) {
-        drawField(c, close[i].blocks, 10 + 566 * scale * i, 550 + 500 * scale * close[i].numberOfSteps, scale);     
-        c.fillText("Id:" + close[i].id + " | ParentId:" + close[i].parentId + " | Step:" + close[i].numberOfSteps + " | Mist:" + close[i].numberOfMistakes, 10 + 566 * scale * i, 540 + 500 * scale * close[i].numberOfSteps);
-    }  
-}
-
+/**
+ * Class of each piece of the puzzle
+ * 
+ * @param {Number} x X-coordinate where a piece should be placed
+ * @param {Number} y Y-coordinate where a piece should be placed
+ * @param {Number} size Length of a side of a piece
+ * @param {Number} value Determines the correct order of pieces 
+ * @param {Number} index Index of an each piece in the list of pieces
+ * @returns {Block}
+ */
 function Block(x, y, size, value, index) {
     this.x = x;
     this.y = y;
@@ -292,20 +254,61 @@ function Block(x, y, size, value, index) {
     this.visible = true;
     this.index = index;
     
+    /**
+     * Draws piece
+     * 
+     * @param {Context} c Context for a canvas
+     * @param {Number} x X-coordinate of the offset in regard to the point (0, 0)
+     * @param {Number} y Y-coordinate of the offset in regard to the point (0, 0)
+     * @param {Number} scale Scale of a piece
+     * 
+     */
     this.draw = function(c, x, y, scale) {
         c.strokeRect(this.x * scale + x, this.y * scale + y, this.size * scale, this.size * scale);
         c.font = "bold " + 30 * scale + "px Arial";
-        c.fillText(this.value.toString(), this.x * scale + this.size * scale/2 + x, this.y * scale + this.size * scale/2 + y);
-        c.drawImage(image, ((this.value - 1) % qX) * imageHeight/qX, imageHeight/qX * Math.round((this.value - 3) / qX), imageHeight/qX, imageHeight/qX, x + this.x * scale, y + this.y * scale, this.size * scale, this.size * scale);
-        //alert(this.value + " "  + (this.value - 1) % qX + " " + Math.round((this.value - 1) / qX));
+        c.drawImage(image, ((this.value - 1) % qX) * imageWidth/qX, imageHeight/qX * mathHelp(this.value), imageHeight/qX, imageHeight/qX, x + this.x * scale, y + this.y * scale, this.size * scale, this.size * scale);
+        //c.fillText(this.value + "", this.x * scale + x + this.size/2, this.y * scale + y + this.size/2);
     }
     
+    /**
+     * Draws index of a piece
+     * 
+     * @param {Context} c Context for a canvas
+     */
     this.drawIndex = function(c) {
         c.font = "10px Arial";
-        c.fillText(this.index.toString(), this.x + this.size/10, this.y + this.size/2);
+        c.fillText(this.value.toString(), this.x + this.size/10, this.y + this.size/2);
     }
+    
 }
 
+/**
+ * Helps to calculate an aspect ratio of an image on each piece
+ * 
+ * @param {Number} value Determines the correct order of pieces 
+ * @returns {Number} Calculated value
+ */
+function mathHelp(value) {
+    var i = 0;
+    while(value > i * qX) {
+        i++;
+    }
+    i--;
+    return i;
+}
+
+/**
+ * Class of the board of pieces
+ * 
+ * @param {Number} id Unique indentifier
+ * @param {Array} blocks List of pieces
+ * @param {Number} parentId Identifier of the board, which this board derives from
+ * @param {String} swap Determines the side, to which last piece was pushed
+ * @param {String} lastmove Determines the side, to which last piece was pushed
+ * @param {Number} numberOfSteps Defines amount of moves from the beginning to this certian board
+ * @param {Number} numberOfMistakes Defines amount of pieces, which are in a wrong order
+ * @returns {State}
+ */
 function State(id, blocks, parentId, swap, lastmove, numberOfSteps, numberOfMistakes) {
     this.id = id;
     this.blocks = blocks;
@@ -316,39 +319,50 @@ function State(id, blocks, parentId, swap, lastmove, numberOfSteps, numberOfMist
     this.numberOfMistakes = numberOfMistakes;
 }
 
-function sort(state) {
-    state.sort(function(a,b) { 
+/**
+ * Sorts the list of boards depending on a sum of numberOfSteps and numberOfMistakes
+ * 
+ * @param {Array} states List of boards
+ * 
+ */
+function sort(states) {
+    states.sort(function(a,b) { 
         return parseFloat(a.numberOfMistakes + a.numberOfSteps) - parseFloat(b.numberOfMistakes + b.numberOfSteps) 
         });
 }
 
+/**
+ * Sets a specific board as a current board of pieces
+ * 
+ * @param {State} state Specific board
+ */
 function setState(state) {    
     blocks = createNewBlocks(state.blocks);
 }
 
-function deepCopy(p,c) { 
-    var c = c||{}; 
-    
-    for (var i in p) {   
-        if (typeof p[i] === 'object') {     
-            c[i] = (p[i].constructor === Array)?[]:{};     
-            deepCopy(p[i],c[i]);   
-        } else c[i] = p[i];
-    } 
-    
-    return c; 
-}
-
+/**
+ * Creates a new list of Blocks, the copy of the given argument
+ * 
+ * @param {Array} blocks Array of pieces, which is being copied
+ * @returns {Array|temp} New array of pieces
+ */
 function createNewBlocks(blocks) {
     temp = [];
     
     for(var i = 0; i < blocks.length; i++) {
-        temp.push(deepCopy(blocks[i]));
+        temp.push(new Block(blocks[i].x, blocks[i].y, blocks[i].size, blocks[i].value, blocks[i].index));
+        temp[i].visible = blocks[i].visible;
     }
     
     return temp;
 }
 
+/**
+ * Generates array of board considering all possible moves
+ * 
+ * @param {State} X Specific board
+ * @returns {Array|generateChildren.temp} Array of generated boards
+ */
 function generateChildren(X) {
     
     var temp = [];
@@ -384,6 +398,13 @@ function generateChildren(X) {
     return temp;
 }
 
+/**
+ * Checks whether a board has a certain order
+ * 
+ * @param {State} state Specific board
+ * @param {Array} values Array with a certain order of the values
+ * @returns {Boolean} True if order is correct, false if not 
+ */
 function compareState(state, values) {
     
     for(var i = 0; i < state.blocks.length; i++) {
@@ -394,33 +415,12 @@ function compareState(state, values) {
     return true;
 }
 
-function solution() {
-    
-   X = deepCopy(open[0]);
-   
-   if(compareState(X, endStateValues)) {
-       close.push(deepCopy(X));
-       alert("Uda³o siê!    Liczba sprawdzeñ: " + k);
-       done = true;
-       
-       return true;
-    } else {
-       open.splice(0,1);
-       setState(X);
-       var children = generateChildren(X);
-            for(var i = 0; i < children.length; i++) {
-                if(open.indexOf(children[i]) == -1 && close.indexOf(children[i]) == -1) {
-                    open.push(deepCopy(children[i]));
-                } 
-            }
-
-        close.push(deepCopy(X));
-        sort(open);
-        
-        return false;
-    }
-}
-
+/**
+ * IDA* Algorythm
+ * 
+ * @param {State} root Initial state of a board
+ * @returns {Number} -1 if the solution was found, 1000 if it wasn't
+ */
 function solutionIDA(root) {
     
    setState(root);   
@@ -434,17 +434,26 @@ function solutionIDA(root) {
    }
 }
 
+/**
+ * Analyses the board in order to find the best next move
+ * 
+ * @param {State} node Current node (board)
+ * @param {Number} g The cost to reach current node (board)
+ * @param {Number} bound ??????
+ * @returns {Number} 
+ */
 function search(node, g, bound) {
     
+    maxMoves++;
     close.push(node);
     var f = g + node.numberOfMistakes;
-    
     if (f > bound) 
         return f;
-    if (node.numberOfMistakes <= 0) {
-        final = deepCopy(node);
+    if (node.numberOfMistakes <= mistake) {
+        final = node;
         return -1;
     }
+    if(maxMoves >= 2000000) return 1000;
     
     var min = 1000;
     setState(node);
@@ -459,6 +468,15 @@ function search(node, g, bound) {
     return min;
 }
 
+/**
+ * Draws the board
+ * 
+ * @param {Context} c Context for a canvas
+ * @param {Array} blocks Board to draw
+ * @param {type} x X-coordinate of the offset in regard to the point (0, 0)
+ * @param {type} y Y-coordinate of the offset in regard to the point (0, 0)
+ * @param {type} scale Scale of the pieces
+ */
 function drawField(c, blocks, x, y, scale) {
     
     c.clearRect(x,y, qX * blocks[0].size * scale, qY *blocks[0].size * scale);
@@ -469,28 +487,32 @@ function drawField(c, blocks, x, y, scale) {
     }
 }
 
+/**
+ * Moves the piece to the certain side
+ * 
+ * @param {String} side Determines where the piece is moved (Up, Down, Left, Right)
+ */
 function swap(side) {
-    //alert("robie swap");
     var swapA = getInvisible();
     var swapB = 0;
     var change = false;
     
-    if(side == "up" && swapA - qX >= 0) {
+    if(side == "up") {
         swapB = swapA - qX;
         lastmove = "up";
         change = true;
     }
-    if(side == "down" && swapA + qX <= quantity) {
+    if(side == "down") {
         swapB = swapA + qX;
         lastmove = "down";
         change = true;
     }
-    if(side == "left" && swapA - 1 >= 0 && blocks[swapA - 1].y == blocks[swapA].y) {
+    if(side == "left") {
         swapB = swapA - 1;
         lastmove = "left";
         change = true;
     }
-    if(side == "right" && swapA + 1 <= quantity && blocks[swapA + 1].y == blocks[swapA].y) {
+    if(side == "right") {
         swapB = swapA + 1;
         lastmove = "right";
         change = true;
@@ -510,22 +532,11 @@ function swap(side) {
     }
 }
 
-function solvable() {
-    
-    var sumMain = 0;
-    var sumTemp = 0;
-    
-    for(var i = 0; i <= quantity; i++) {
-        for(var j = i + 1; j <= quantity; j++) {
-            if(blocks[j].value < blocks[i].value) sumTemp++;
-        }
-        sumMain += sumTemp;
-        sumTemp = 0;
-    }
-    
-    return sumMain;
-}
-
+/**
+ * Returns an index of the empty piece
+ * 
+ * @returns {Number} Index of the empty piece
+ */
 function getInvisible() {
     
     var i = -1;
@@ -537,6 +548,11 @@ function getInvisible() {
     return i;
 }
 
+/**
+ * Mixes board into random order
+ * 
+ * @param {type} blocks Array of pieces
+ */
 function mix(blocks) {
     
     var change;
@@ -569,6 +585,12 @@ function mix(blocks) {
     }       
 }
 
+/**
+ * Returns an index of the piece with the certain value
+ * 
+ * @param {type} value Given value
+ * @returns {Number} Index of the piece
+ */
 function getValue(value) {
     
     var i = -1;
@@ -580,6 +602,11 @@ function getValue(value) {
     return i;
 }
 
+/**
+ * Calculates the number of pieces, which are in a wrong order
+ * 
+ * @returns {Number} Amout of wrong pieces
+ */
 function numberOfMistakes() {
     
     var sum = 0;

@@ -1,37 +1,79 @@
 <?xml version="1.0" encoding="windows-1250"?>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>N-Puzzle Problem</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="Puzzle.css" title = "PuzzleStyle" />
+	<link href="fonts.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="http://fonts.googleapis.com/css?family=Didact+Gothic" rel="stylesheet" />
     </head>
     <body>
-        <div>
-            <form>
-                Szybkość animacji:
-                <br/>
-                <select id="speed">
-                <option value="1">x1</option>
-                <option value="0.5">x0.5</option>
-                <option value="2">x2</option>
-                <option value="3">x3</option>
-                </select>
-                <br/><br/>
-            <input type="button" id="3x3" value="3x3 Jeszcze nie działa"/>
-            <input type="button" id="4x4" value="4x4"/>
-            <input type="button" id="5x5" value="5x5"/>
-            <input type="button" id="solution" value="Fix"/>
-            <input type="button" id="reset" value="Mix"/>
-            <input type="button" id="solve" value="Solve"/>
-            <br/><br/>
-            </form>
-            <canvas width="500" height="625" id="canvas"></canvas>
-            <script type="text/javascript" src="Puzzle.js"></script>
-        </div>
+	<div id="header-wrapper">
+	<div id="header" class="container">
+		<div id="logo">
+			<h1><a href="#">N-Puzzle Problem</a></h1>
+		</div>
+		
+		<div id="menu">
+			<form>
+			<ul>
+				<li><a title="">Animation Speed</a>
+					<br /><select id="speed">
+               					<option value="1">x1</option>
+                				<option value="0.5">x0.5</option>
+                				<option value="2">x2</option>
+                				<option value="3">x3</option>
+                			</select>				
+				</li>
+				<li><a title="">Mistake</a>
+					<br /><input id="mistake" type="text" value="0" size="4"/>
+				</li>
+				<li><a title="">Moves</a>
+					<br /><input id="moves" type="text" value="25" size="4"/>
+				</li>
+				<li><a title="">Size</a>
+					<br /><input id="size" type="text" value="4" size="4"/>
+				</li>
+				
+			</ul>
+			</form>
+		</div>
+	</div>
+	
+        
+	
+	<div id="banner" class="container">
+		<div class="title">
+			<h2>Animation</h2>
+		</div>
+		<form>
+			<ul class="actions">
+				<li><a href="#canvas" class="button button-alt" id="solution">Fix</a></li>
+				<li><a href="#" class="button button-alt" id="reset">Mix</a></li>
+				<li><a href="#canvas" class="button button-alt" id="solve">Solve</a></li>
+		        </ul>
+		</form>
+             	</div>  
+            
+	</div>
+	<div id="wrapper">
+	<div id="three-column" class="container">
+    	<div class="banner">
+                <img id="front" src="front.png" alt="Mountain View" style="width:510px;height:510px;"/>
+	        <canvas width="500" height="625" id="canvas"></canvas><br /><br />
+		<div class="title">
+			<h2>Projekt N-Puzzle</h2>
+			<span class="byline">Wykonany przez:</span>
+		</div>
+		<div class="boxA"><p>Marek Labuz</p></div>
+		<div class="boxB"><p>Dominik Cieraszewski</p></div>
+		<div class="boxC"><p>Jakub Syrek</p></div>
+        	</div>
+		</div>
+		</div>
+          	<script type="text/javascript" src="Puzzle.js"></script>        
     </body>
 </html>
+
